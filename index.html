@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>專業隨機抽選器 - 視覺進化版</title>
+    <title>專業隨機抽選器 - 進階批量版</title>
     <style>
         :root {
             --bg-color: #1e293b;
@@ -22,74 +22,61 @@
 
         .app-container { display: flex; flex-direction: column; height: 100vh; }
 
-        /* 頂部控制區 */
         .header {
-            background: #0f172a; padding: 25px; text-align: center;
+            background: #0f172a; padding: 20px; text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 10;
         }
 
         .btn-main {
-            background: var(--success); color: white; padding: 12px 35px; 
+            background: var(--success); color: white; padding: 12px 30px; 
             font-size: 1.1em; border-radius: 50px; border: none; cursor: pointer;
             font-weight: bold; transition: 0.3s;
         }
-        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4); }
+        .btn-main:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4); }
 
         .btn-outline {
             background: transparent; border: 1px solid var(--accent); color: var(--accent);
-            padding: 8px 15px; border-radius: 6px; cursor: pointer; margin: 5px;
+            padding: 6px 12px; border-radius: 6px; cursor: pointer; margin: 5px; font-size: 0.9em;
         }
 
-        /* 內容滾動區 */
-        .content-area { flex: 1; overflow-y: auto; padding: 20px; max-width: 800px; margin: 0 auto; width: 100%; }
+        .content-area { flex: 1; overflow-y: auto; padding: 20px; max-width: 800px; margin: 0 auto; width: 100%; box-sizing: border-box; }
 
-        /* 分類卡片 */
         .category-box {
             background: var(--card-bg); border-radius: 12px; margin-bottom: 15px; 
             overflow: hidden; border: 1px solid rgba(255,255,255,0.1);
         }
         .category-header {
-            padding: 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+            padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
             background: rgba(255,255,255,0.05);
         }
         
-        .items-list { padding: 15px; background: rgba(0,0,0,0.2); }
-        .hidden { display: none; }
+        .items-list { padding: 10px; background: rgba(0,0,0,0.2); }
+        .hidden { display: none !important; }
 
-        /* 選項小卡 */
         .item-card {
-            background: #f8fafc; color: #1e293b; margin: 10px 0; padding: 15px;
+            background: #f8fafc; color: #1e293b; margin: 8px 0; padding: 12px;
             border-radius: 8px; display: flex; justify-content: space-between; align-items: center;
-            animation: fadeIn 0.3s ease;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 2. 中央彈窗 (Modal) 樣式 */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
             display: none; align-items: center; justify-content: center; z-index: 1000;
         }
         .modal-content {
-            background: white; color: #333; width: 90%; max-width: 400px;
-            padding: 30px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            position: relative; animation: zoomIn 0.2s ease;
+            background: white; color: #333; width: 90%; max-width: 450px;
+            padding: 25px; border-radius: 15px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);
         }
-        @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        .modal-content h3 { margin-top: 0; color: #0f172a; }
-        .modal-content input {
-            width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd;
-            border-radius: 8px; box-sizing: border-box; font-size: 16px;
+        .modal-content input, .modal-content textarea {
+            width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd;
+            border-radius: 6px; box-sizing: border-box; font-size: 16px;
         }
-        .modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
-        .btn-confirm { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 8px; }
-        .btn-cancel { background: #94a3b8; color: white; border: none; padding: 10px 20px; border-radius: 8px; }
+        .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 15px; }
 
-        /* 抽選結果全屏 */
         #resultOverlay {
             position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(15, 23, 42, 0.95); display: none;
+            background: rgba(15, 23, 42, 0.98); display: none;
             flex-direction: column; align-items: center; justify-content: center; z-index: 2000;
         }
     </style>
@@ -98,136 +85,172 @@
 
 <div class="app-container">
     <div class="header">
-        <h1 style="margin: 0 0 15px 0; font-size: 1.5em;">🎡 專業隨機抽選器</h1>
+        <h1 style="margin: 0 0 10px 0; font-size: 1.4em;">🎡 專業隨機抽選器</h1>
         <div>
             <select id="drawScope" style="padding: 10px; border-radius: 8px; background: #334155; color: white; border: none;">
                 <option value="all">所有分組</option>
             </select>
             <button class="btn-main" onclick="drawNow()">🎉 開始抽選</button>
         </div>
-        <div style="margin-top: 15px;">
+        <div style="margin-top: 10px;">
             <button class="btn-outline" onclick="openModal('category')">+ 建立新分組</button>
         </div>
     </div>
-
     <div class="content-area" id="displayArea"></div>
 </div>
 
 <div id="inputModal" class="modal-overlay">
     <div class="modal-content">
-        <h3 id="modalTitle">新增資料</h3>
-        <input type="text" id="mainInput" placeholder="名稱">
-        <input type="text" id="subInput" placeholder="備註 (選填)">
+        <h3 id="modalTitle" style="margin-top:0">新增資料</h3>
+        
+        <div id="singleInputGroup">
+            <input type="text" id="mainInput" placeholder="名稱">
+            <input type="text" id="subInput" placeholder="備註 (選填)">
+        </div>
+
+        <div id="batchInputGroup" style="display: none;">
+            <p style="font-size: 0.85em; color: #666; margin: 0;">空行分隔選項，第一行為名，其餘為註：</p>
+            <textarea id="batchInput" rows="10" placeholder="範例：&#10;拉麵&#10;很好吃但很鹹&#10;&#10;咖哩飯&#10;要加辣粉"></textarea>
+        </div>
+
         <div class="modal-btns">
-            <button class="btn-cancel" onclick="closeModal()">取消</button>
-            <button class="btn-confirm" id="modalConfirmBtn">確定</button>
+            <button class="btn-outline" id="toggleModeBtn" style="border-color:#6366f1; color:#6366f1;">批量模式</button>
+            <div style="flex:1"></div>
+            <button class="btn-outline" style="border:none; color:#666;" onclick="closeModal()">取消</button>
+            <button class="btn-main" id="modalConfirmBtn" style="border-radius:8px; padding: 10px 20px;">確定</button>
         </div>
     </div>
 </div>
 
 <div id="resultOverlay">
     <h2 style="color: var(--accent); margin:0;">抽選結果</h2>
-    <div id="resultText" style="font-size: 4em; margin: 20px; font-weight: bold; text-shadow: 0 0 20px var(--accent);"></div>
-    <div id="resultNote" style="font-size: 1.5em; opacity: 0.7; margin-bottom: 40px;"></div>
+    <div id="resultText" style="font-size: 4em; margin: 20px; font-weight: bold; text-align:center;"></div>
+    <div id="resultNote" style="font-size: 1.5em; opacity: 0.7; margin-bottom: 40px; text-align:center; white-space: pre-line;"></div>
     <button id="searchActionBtn" class="btn-main" style="background:#4285F4">🔍 搜尋此選項</button>
     <button onclick="document.getElementById('resultOverlay').style.display='none'" style="background:none; color:white; margin-top:30px; border:none; cursor:pointer; text-decoration:underline;">關閉</button>
 </div>
 
 <script>
-    let data = JSON.parse(localStorage.getItem('pickerData_v4')) || [];
+    let data = JSON.parse(localStorage.getItem('pickerData_v6')) || [];
     let currentCatId = null;
+    let currentItemId = null;
+    let isBatchMode = false;
 
     function saveData() {
-        localStorage.setItem('pickerData_v4', JSON.stringify(data));
+        localStorage.setItem('pickerData_v6', JSON.stringify(data));
         updateSelectOptions();
         render();
     }
 
-    // --- 彈窗控制邏輯 ---
-    function openModal(type, catId = null) {
-        currentCatId = catId;
+    function openModal(mode, catId = null, itemId = null) {
+        currentCatId = catId; currentItemId = itemId; isBatchMode = false;
         const modal = document.getElementById('inputModal');
-        const title = document.getElementById('modalTitle');
+        const toggleBtn = document.getElementById('toggleModeBtn');
+        const singleGroup = document.getElementById('singleInputGroup');
+        const batchGroup = document.getElementById('batchInputGroup');
         const mainInp = document.getElementById('mainInput');
         const subInp = document.getElementById('subInput');
-        
-        mainInp.value = ""; subInp.value = "";
-        modal.style.display = 'flex';
-        mainInp.focus();
+        const batchInp = document.getElementById('batchInput');
 
-        if (type === 'category') {
-            title.innerText = "建立新分組";
+        mainInp.value = ""; subInp.value = ""; batchInp.value = "";
+        singleGroup.style.display = 'block'; batchGroup.style.display = 'none';
+        toggleBtn.style.display = 'none'; modal.style.display = 'flex';
+
+        if (mode === 'category') {
+            document.getElementById('modalTitle').innerText = "建立新分組";
             subInp.style.display = 'none';
             document.getElementById('modalConfirmBtn').onclick = addCategory;
-        } else {
-            title.innerText = "新增選項";
+        } else if (mode === 'item') {
+            document.getElementById('modalTitle').innerText = "新增選項";
             subInp.style.display = 'block';
-            subInp.placeholder = "輸入備註 (選填)";
-            document.getElementById('modalConfirmBtn').onclick = addItem;
+            toggleBtn.style.display = 'inline-block';
+            toggleBtn.onclick = () => {
+                isBatchMode = !isBatchMode;
+                singleGroup.style.display = isBatchMode ? 'none' : 'block';
+                batchGroup.style.display = isBatchMode ? 'block' : 'none';
+                toggleBtn.innerText = isBatchMode ? "回單一模式" : "批量模式";
+            };
+            document.getElementById('modalConfirmBtn').onclick = () => isBatchMode ? addItemsBatch() : addItem();
+        } else if (mode === 'edit') {
+            const item = data.find(c => c.id === catId).items.find(i => i.id === itemId);
+            document.getElementById('modalTitle').innerText = "修改選項";
+            mainInp.value = item.name; subInp.value = item.note || "";
+            document.getElementById('modalConfirmBtn').onclick = editItem;
         }
     }
 
-    function closeModal() {
-        document.getElementById('inputModal').style.display = 'none';
-    }
+    function closeModal() { document.getElementById('inputModal').style.display = 'none'; }
 
-    // --- 資料操作 ---
     function addCategory() {
         const name = document.getElementById('mainInput').value;
         if (!name) return;
         data.push({ id: Date.now(), name, items: [], isOpen: true });
-        saveData();
-        closeModal();
+        saveData(); closeModal();
     }
 
     function addItem() {
         const name = document.getElementById('mainInput').value;
         if (!name) return;
-        const note = document.getElementById('subInput').value;
-        const cat = data.find(c => c.id === currentCatId);
-        cat.items.push({ id: Date.now(), name, note });
-        saveData();
-        closeModal();
+        data.find(c => c.id === currentCatId).items.push({ id: Date.now(), name, note: document.getElementById('subInput').value });
+        saveData(); closeModal();
     }
 
-    function deleteCategory(catId) {
-        if(confirm("確定刪除此分組？")) {
-            data = data.filter(c => c.id !== catId);
-            saveData();
-        }
+    // --- 修改後的批量加入邏輯 ---
+    function addItemsBatch() {
+        const rawText = document.getElementById('batchInput').value;
+        if (!rawText.trim()) return;
+
+        // 1. 先用「兩個換行符」或「空行」來切割塊 (Blocks)
+        // 使用正則表達式 \n\s*\n 來抓取空行
+        const blocks = rawText.split(/\n\s*\n/);
+        const cat = data.find(c => c.id === currentCatId);
+
+        blocks.forEach(block => {
+            const lines = block.split('\n').map(l => l.trim()).filter(l => l !== "");
+            if (lines.length > 0) {
+                const name = lines[0]; // 第一行是名稱
+                const note = lines.slice(1).join('\n'); // 剩下的是備註 (保留換行)
+                cat.items.push({ id: Date.now() + Math.random(), name, note });
+            }
+        });
+
+        saveData(); closeModal();
+    }
+
+    function editItem() {
+        const item = data.find(c => c.id === currentCatId).items.find(i => i.id === currentItemId);
+        item.name = document.getElementById('mainInput').value;
+        item.note = document.getElementById('subInput').value;
+        saveData(); closeModal();
     }
 
     function deleteItem(catId, itemId) {
-        const cat = data.find(c => c.id === catId);
-        cat.items = cat.items.filter(i => i.id !== itemId);
+        data.find(c => c.id === catId).items = data.find(c => c.id === catId).items.filter(i => i.id !== itemId);
         saveData();
     }
 
-    // --- 抽選與搜尋 ---
+    function deleteCategory(catId) {
+        if(confirm("確定刪除此分組？")) { data = data.filter(c => c.id !== catId); saveData(); }
+    }
+
     function updateSelectOptions() {
         const select = document.getElementById('drawScope');
-        let options = '<option value="all">所有分組</option>';
-        data.forEach(cat => options += `<option value="${cat.id}">${cat.name}</option>`);
-        select.innerHTML = options;
+        let html = '<option value="all">所有分組</option>';
+        data.forEach(cat => html += `<option value="${cat.id}">${cat.name}</option>`);
+        select.innerHTML = html;
     }
 
     function drawNow() {
         const scope = document.getElementById('drawScope').value;
         let pool = [];
         data.forEach(cat => {
-            if (scope === 'all' || cat.id == scope) {
-                cat.items.forEach(item => pool.push({...item, catName: cat.name}));
-            }
+            if (scope === 'all' || cat.id == scope) cat.items.forEach(i => pool.push({...i, catName: cat.name}));
         });
-
-        if (pool.length === 0) return alert("沒有可抽選的項目！");
-        const result = pool[Math.floor(Math.random() * pool.length)];
-        
-        document.getElementById('resultText').innerText = result.name;
-        document.getElementById('resultNote').innerText = result.note || "";
-        document.getElementById('searchActionBtn').onclick = () => {
-            window.open(`https://www.google.com/search?q=${encodeURIComponent(result.catName + ' ' + result.name)}`, '_blank');
-        };
+        if (pool.length === 0) return alert("抽選池是空的！");
+        const res = pool[Math.floor(Math.random() * pool.length)];
+        document.getElementById('resultText').innerText = res.name;
+        document.getElementById('resultNote').innerText = res.note || "";
+        document.getElementById('searchActionBtn').onclick = () => window.open(`https://www.google.com/search?q=${encodeURIComponent(res.catName + ' ' + res.name)}`, '_blank');
         document.getElementById('resultOverlay').style.display = 'flex';
     }
 
@@ -237,28 +260,22 @@
             <div class="category-box">
                 <div class="category-header" onclick="this.nextElementSibling.classList.toggle('hidden')">
                     <strong>📂 ${cat.name} (${cat.items.length})</strong>
-                    <div>
-                        <button class="btn-outline" style="border-color:var(--danger); color:var(--danger); padding:2px 8px;" onclick="event.stopPropagation(); deleteCategory(${cat.id})">刪除</button>
-                    </div>
+                    <button class="btn-outline" style="border-color:var(--danger); color:var(--danger); margin:0;" onclick="event.stopPropagation(); deleteCategory(${cat.id})">刪除分組</button>
                 </div>
                 <div class="items-list">
-                    <button class="btn-outline" onclick="openModal('item', ${cat.id})">+ 新增選項</button>
-                    ${cat.items.map(item => `
+                    <button class="btn-outline" onclick="openModal('item', ${cat.id})">+ 新增/批量</button>
+                    ${cat.items.map(i => `
                         <div class="item-card">
-                            <div>
-                                <strong>${item.name}</strong><br>
-                                <small style="color:#64748b">${item.note || ''}</small>
-                            </div>
-                            <button onclick="deleteItem(${cat.id}, ${item.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;">✕</button>
+                            <div style="flex:1"><strong>${i.name}</strong><br><small style="color:#64748b; white-space: pre-wrap;">${i.note || ''}</small></div>
+                            <button class="btn-outline" style="padding:2px 8px;" onclick="openModal('edit', ${cat.id}, ${i.id})">改</button>
+                            <button onclick="deleteItem(${cat.id}, ${i.id})" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:1.2em; margin-left:5px;">✕</button>
                         </div>
                     `).join('')}
                 </div>
             </div>
         `).join('');
     }
-
-    updateSelectOptions();
-    render();
+    updateSelectOptions(); render();
 </script>
 </body>
 </html>
